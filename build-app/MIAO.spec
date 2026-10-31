@@ -1,20 +1,30 @@
 # -*- mode: python ; coding: utf-8 -*-
 # onedir 打包：启动秒开（不再解压 37MB 临时目录）
+# 路径全部基于 SPECPATH 计算 —— 本地 E:\ 和 GitHub Actions runner 都能跑
+import os
+
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('E:/dorimi/ai/wb_oauth/console/ui.css', '.'), ('E:/dorimi/ai/wb_oauth/console/ui.js', '.'), ('E:/dorimi/ai/wb_oauth/console/index.html', '.'), ('E:/dorimi/ai/wb_oauth/console/app.html', '.'), ('E:/dorimi/ai/wb_oauth/console/logo-h.svg', '.'), ('E:/dorimi/ai/wb_oauth/console/logo-dark.svg', '.'), ('E:/dorimi/ai/wb_oauth/console/logo-symbol.svg', '.'), ('E:/dorimi/ai/wb_oauth/console/app-icon.png', '.'), ('E:/dorimi/ai/wb_oauth/console/favicon.ico', '.'), ('E:/dorimi/ai/wb_oauth/gen_models.py', '.')]
+ROOT = os.path.dirname(os.path.abspath(SPECPATH))   # 仓库根（console 目录）
+
+FILES = [
+    'ui.css', 'ui.js', 'index.html', 'app.html',
+    'logo-h.svg', 'logo-dark.svg', 'logo-symbol.svg',
+    'app-icon.png', 'favicon.ico', 'gen_models.py',
+]
+datas = [(os.path.join(ROOT, f), '.') for f in FILES if os.path.isfile(os.path.join(ROOT, f))]
+
 binaries = []
 hiddenimports = ['clr', 'webview.platforms.edgechromium']
-tmp_ret = collect_all('webview')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-tmp_ret = collect_all('pythonnet')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-tmp_ret = collect_all('clr_loader')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+for pkg in ('webview', 'pythonnet', 'clr_loader'):
+    t = collect_all(pkg)
+    datas += t[0]
+    binaries += t[1]
+    hiddenimports += t[2]
 
 
 a = Analysis(
-    ['../app.py'],
+    [os.path.join(ROOT, 'app.py')],
     pathex=[],
     binaries=binaries,
     datas=datas,
@@ -46,7 +56,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['E:/dorimi/ai/wb_oauth/console/app.ico'],
+    icon=[os.path.join(ROOT, 'app.ico')],
 )
 
 # onedir：把依赖解压成目录，启动只加载不重复解压 → 打开秒开

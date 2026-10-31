@@ -307,7 +307,6 @@
   <div class="c-head">
     <div class="c-brand">
       <div class="mark logo-mark"><img src="/logo-h.svg" alt="MIAO"></div>
-      <div class="t">MIAO</div>
     </div>
     <div class="keychip" onclick="showKeyMenu()">
       <span id="chip-key">sk-········</span>
@@ -351,7 +350,7 @@
     </div>
     <div class="foot-row" onclick="showAbout()">
       <span>设置</span>
-      <span class="r" id="ver-line">v1.0 <span data-ic="chev"></span></span>
+      <span class="r" id="ver-line"><span id="ver-num">v1.0</span> <span data-ic="chev"></span></span>
     </div>
   </div>
 </section>
@@ -590,8 +589,8 @@ async function showAbout() {
 }
 
 /* ---------- 检测更新 ---------- */
-// 前端版本号：打包前必须与 app.py 的 APP_VERSION 同步（v1.1.4）
-const CUR_VERSION = '1.1.4';
+// 前端版本号：打包前必须与 app.py 的 APP_VERSION 同步（v1.1.5）
+const CUR_VERSION = '1.1.5';
 function verCmp(a, b) {
   const pa = String(a || '0').replace('v', '').split('.').map(Number);
   const pb = String(b || '0').replace('v', '').split('.').map(Number);
@@ -711,6 +710,13 @@ async function doRedeem() {
 
 /* ---------- 启动 ---------- */
 (async function boot() {
+  // 版本号：启动即填，别等「检查更新」才刷新
+  try {
+    var ve = document.getElementById('ver-cur');
+    if (ve) ve.textContent = 'v' + CUR_VERSION;
+    var vn = document.getElementById('ver-num');
+    if (vn) vn.textContent = 'v' + CUR_VERSION;
+  } catch (e) {}
   try {
     const j = await api('/api/models');
     D.models = (j && j.models) || [];

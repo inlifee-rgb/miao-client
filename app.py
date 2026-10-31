@@ -32,7 +32,7 @@ import gen_models  # noqa: E402
 
 # ─────────────── 版本与更新 ───────────────
 APP_NAME = 'MIAO for WorkBuddy'
-APP_VERSION = '1.1.4'                      # 当前安装版本（每次打包必须 +1）
+APP_VERSION = '1.1.5'                      # 当前安装版本（每次打包必须 +1）
 GATEWAY_BASE = 'http://127.0.0.1:18085'    # MIAO 自研网关（不再依赖 new-api）
 VERSION_URL = GATEWAY_BASE + '/api/version'
 DOWNLOAD_URL = GATEWAY_BASE + '/download/MIAO.zip'

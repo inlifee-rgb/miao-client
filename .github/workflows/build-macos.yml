@@ -73,4 +73,62 @@ jobs:
             dist/MIAO-mac-*.zip
             dist/sha256.txt
           retention-days: 30
+
+  windows-x64:
+    name: Windows x64
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 准备 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 缓存 pip
+        uses: actions/cache@v4
+        with:
+          path: ~\AppData\Local\pip\Cache
+          key: ${{ runner.os }}-pip-miao-win-${{ hashFiles('build-app/MIAO.spec') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-miao-win-
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller pywebview qrcode pillow
+
+      - name: 打包 onedir
+        run: pyinstaller build-app/MIAO.spec --distpath dist --workpath build --noconfirm
+
+      - name: 读取版本号
+        id: ver
+        shell: bash
+        run: |
+          V=$(awk -F"'" '/^APP_VERSION/{print $2; exit}' app.py)
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "打包版本: $V"
+
+      - name: 压缩并生成校验值
+        shell: pwsh
+        run: |
+          cd dist
+          $name = "MIAO-${{ steps.ver.outputs.version }}.zip"
+          Compress-Archive -Path "MIAO\*" -DestinationPath $name -Force
+          (Get-FileHash $name -Algorithm SHA256).Hash.ToLower() + "  $name" | Out-File sha256.txt -Encoding utf8
+          Get-ChildItem | Format-Table Name, Length
+          Get-Content sha256.txt
+
+      - name: 上传产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: MIAO-win-${{ steps.ver.outputs.version }}
+          path: |
+            dist/MIAO-*.zip
+            dist/sha256.txt
+          retention-days: 30
+          if-no-files-found: error
           if-no-files-found: error

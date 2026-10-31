@@ -187,6 +187,15 @@ def find_me(key):
         conn = _gw_db()
         try:
             r = conn.execute('SELECT * FROM keys WHERE key=?', (rk,)).fetchone()
+            cnt = 0
+            if r:
+                # 调用次数 = 该密钥名下的成功请求数（logs 表）
+                try:
+                    cnt = conn.execute(
+                        'SELECT COUNT(*) FROM logs WHERE key_name=? AND ok=1', (r['name'],)
+                    ).fetchone()[0]
+                except Exception:
+                    cnt = 0
         finally:
             conn.close()
     except Exception:
@@ -202,7 +211,7 @@ def find_me(key):
         'display_name': r['name'],
         'quota': round(remain / QUOTA_PER_CREDIT, 4) if not unlimited else -1,
         'used_quota': round(r['used'] / QUOTA_PER_CREDIT, 4),
-        'request_count': None,
+        'request_count': cnt,
         'status': 1 if r['enabled'] else 0,
         'unlimited': unlimited,
     }
