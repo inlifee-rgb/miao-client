@@ -56,7 +56,11 @@ jobs:
         run: |
           cd dist
           NAME="MIAO-mac-${{ steps.ver.outputs.version }}.zip"
-          ditto -c -k --keepParent MIAO.app "$NAME"
+          # 把安装说明一起打进包：用户解压第一眼就能看到放行步骤
+          rm -rf pkg && mkdir -p pkg
+          cp -R MIAO.app pkg/
+          cp ../安装说明-macOS.txt pkg/安装说明-必读.txt
+          ditto -c -k pkg "$NAME"
           shasum -a 256 "$NAME" > sha256.txt
           ls -lh
           cat sha256.txt
