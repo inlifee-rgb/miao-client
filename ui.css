@@ -752,3 +752,15 @@ th.num { text-align: right; }
   .stat-row { margin-top: 12px; }
   .wrap { padding-bottom: 40px; }
 }
+
+
+/* 客户端下载区：安装说明（10-31 加） */
+.dl-tip {
+  font-size: 11.5px;
+  line-height: 1.7;
+  color: #8B95A5;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #E4E9F0;
+}
+.dl-tip b { color: #5B6678; font-weight: 500; }
