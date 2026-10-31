@@ -3,7 +3,8 @@
 import os
 from PyInstaller.utils.hooks import collect_all
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(SPECPATH)))  # console/
+# 仓库根 = SPECPATH 的上一级（spec 位于 <repo>/build-app/）
+ROOT = os.path.dirname(os.path.abspath(SPECPATH))
 D = lambda *p: os.path.join(ROOT, *p)
 
 datas = [
