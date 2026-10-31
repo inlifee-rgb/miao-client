@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MIAO · 积分与密钥</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="stylesheet" href="ui.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brandbox">
+    <div class="mark logo-mark"><img src="/logo-h.svg" alt="MIAO"></div>
+    <div>
+      <div class="brandname">MIAO</div>
+      <div class="brandsub">for WorkBuddy</div>
+    </div>
+  </div>
+  <button class="ghost-link" onclick="openMask('m-service')">联系客服</button>
+</div>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="hero-orb o1"></div>
+    <div class="hero-orb o2"></div>
+    <div class="hero-in">
+      <div class="hero-tag">
+        <span class="hero-tag-dot"></span>
+        MIAO Gateway · 自研分发
+      </div>
+      <div class="hero-title">WorkBuddy 的 AI 引擎</div>
+      <div class="hero-sub">16 个模型 · 一套密钥 · 积分自管 · 秒级响应</div>
+      <div class="hero-badge-row">
+        <span class="hero-badge">⚡ 流式输出</span>
+        <span class="hero-badge">🔒 本地保存</span>
+        <span class="hero-badge">🔄 一键更新</span>
+      </div>
+    </div>
+    <div class="hero-stat">
+      <div class="hs-v" id="hero-models">16</div>
+      <div class="hs-k">可用模型</div>
+      <div class="hs-line"></div>
+      <div class="hs-v" id="hero-balance">—</div>
+      <div class="hs-k">我的积分</div>
+    </div>
+  </div>
+
+  <div class="seg-wrap">
+    <div class="seg" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="redeem">兑换积分</button>
+      <button role="tab" aria-selected="false" data-tab="account">我的账户</button>
+    </div>
+  </div>
+
+  <!-- ================= 兑换积分 ================= -->
+  <section class="tabpane on" id="pane-redeem">
+
+    <h1 class="h1" id="redeem-title">兑换成功，请保存密钥</h1>
+    <p class="h1-sub">
+      当前余额
+      <b id="bal-inline" style="color:var(--ink);font-variant-numeric:tabular-nums">—</b>
+      <span>积分</span>
+      <span class="dot-sep">·</span>
+      <button class="icon-btn" style="width:20px;height:20px" title="刷新余额" onclick="refreshBalance()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1"/><path d="M20.7 4.2v4.6h-4.6"/></svg>
+      </button>
+    </p>
+
+    <!-- 无密钥时：先输入 -->
+    <div class="card" id="card-nokey" style="display:none">
+      <div class="field-label" style="margin-bottom:8px">输入你的 MIAO 密钥</div>
+      <div class="keyinput">
+        <input id="in-key-empty" type="password" placeholder="sk-..." autocomplete="off" spellcheck="false">
+        <button class="icon-btn" data-eye="in-key-empty"></button>
+      </div>
+      <div class="hint">密钥由客服在开通后发放，形如 sk-xxxxxxxx。它同时是控制台登录凭证和 WorkBuddy 的 API Key。</div>
+      <button class="btn btn-dark btn-block" style="margin-top:16px" onclick="submitKey()">载入密钥</button>
+    </div>
+
+    <!-- 有密钥时：保存密钥卡 -->
+    <div class="card" id="card-key" style="display:none">
+
+      <div class="warn">
+        <span class="ic" data-ic="warn"></span>
+        <div>
+          <div class="warn-t">请妥善保管 MIAO 账户</div>
+          <div class="warn-b">这段密钥可用于登录控制台并写入 WorkBuddy 的凭证，请勿分享给他人，并保存到安全的位置。<br>如果关闭此页面后将无法再次查看完整的密钥，遗失也只能重新生成。</div>
+        </div>
+      </div>
+
+      <div class="field-head">
+        <span class="field-label">MIAO 账户</span>
+        <a href="javascript:;" onclick="resetKey()" style="font-size:12px">修改密钥</a>
+      </div>
+      <div class="keyinput">
+        <input id="in-key" type="password" readonly value="">
+        <button class="icon-btn" data-eye="in-key"></button>
+      </div>
+
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn btn-ghost" onclick="doCopyKey()"><span data-ic="copy"></span> 复制账户</button>
+        <button class="btn btn-ghost" onclick="doDownloadAccount()"><span data-ic="download"></span> 下载账户信息</button>
+      </div>
+
+      <div class="hint" id="copy-hint">密钥只保存在本机浏览器，不会上传到任何服务器。</div>
+
+      <div class="checkline" id="chk" onclick="toggleCheck()">
+        <div class="checkbox"><span data-ic="check"></span></div>
+        <span>我已妥善保存 MIAO 账户</span>
+      </div>
+
+      <button class="btn btn-dark btn-block" id="btn-enter" disabled onclick="gotoAccount()">进入我的账户</button>
+    </div>
+
+    <!-- 接入方式 -->
+    <div class="panel-dark">
+      <div class="panel-head">
+        <div class="mark on-dark" style="width:112px;height:28px"><img src="/logo-dark.svg" alt="MIAO"></div>
+        <div>
+          <div class="panel-title">MIAO × WorkBuddy</div>
+        </div>
+      </div>
+      <div class="panel-sub">选择一种接入方式，一分钟完成配置</div>
+
+      <div class="cards4">
+        <div class="acc on">
+          <div class="acc-badge">推荐</div>
+          <div class="acc-ico" data-ic="plug"></div>
+          <div class="acc-name">配置软件</div>
+          <div class="acc-desc">推荐 Windows 和 macOS 用户使用。安装后，粘贴密钥即可完成配置。</div>
+          <button class="acc-btn solid" id="btn-dl" onclick="toggleDl(event)">
+            下载 Windows
+            <span data-ic="chev"></span>
+          </button>
+          <div class="menu" id="menu-dl">
+            <button onclick="downloadApp('win')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5 10.2 4.5v7H3v-6ZM11.3 4.3 21 3v8.5h-9.7v-7.2ZM3 12.5h7.2v7L3 18.5v-6ZM11.3 12.5H21V21l-9.7-1.3v-7.2Z"/></svg>
+              下载 Windows
+            </button>
+            <button onclick="downloadApp('mac')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16.2 12.6c0-2 1.6-3 1.7-3.1-.9-1.4-2.4-1.6-2.9-1.6-1.2-.1-2.4.7-3 .7-.6 0-1.6-.7-2.6-.7-1.3 0-2.6.8-3.3 2-1.4 2.5-.4 6.1 1 8.1.7 1 1.5 2.1 2.5 2 1-.04 1.4-.65 2.6-.65 1.2 0 1.6.65 2.6.63 1.1-.02 1.8-1 2.4-2 .8-1.1 1.1-2.2 1.1-2.3-.03-.01-2.1-.8-2.1-3.1ZM14.3 6.4c.5-.7.9-1.6.8-2.5-.8.03-1.8.55-2.4 1.2-.5.6-1 1.6-.8 2.5.9.07 1.8-.45 2.4-1.2Z"/></svg>
+              下载 macOS
+            </button>
+          </div>
+        </div>
+
+        <div class="acc">
+          <div class="acc-ico" data-ic="spark"></div>
+          <div class="acc-name">Skill 一键配置</div>
+          <div class="acc-desc">在对话里粘贴密钥，自动完成模型写入，不用离开 WorkBuddy。</div>
+          <button class="acc-btn" onclick="showSkill()">开始 Skill 配置 <span data-ic="arrow"></span></button>
+        </div>
+
+        <div class="acc">
+          <div class="acc-ico" data-ic="file"></div>
+          <div class="acc-name">下载配置文件</div>
+          <div class="acc-desc">适合无法安装软件或想手动放进客户端的用户，一次生成长期可用。</div>
+          <button class="acc-btn" onclick="doDownloadConfig()">生成 models.json</button>
+        </div>
+
+        <div class="acc">
+          <div class="acc-ico" data-ic="code"></div>
+          <div class="acc-name">API 手动接入</div>
+          <div class="acc-desc">适合开发者或已在用其他客户端，填地址和密钥就能用。</div>
+          <button class="acc-btn" onclick="openMask('m-api')">查看接入说明 <span data-ic="arrow"></span></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 我的账户 ================= -->
+  <section class="tabpane" id="pane-account">
+    <div class="card">
+      <div class="section-h">
+        <div>
+          <div class="section-h sub" style="font-size:12px;color:var(--ink-3);margin-bottom:2px">积分余额</div>
+          <div class="balance" id="bal-big">—<small>积分</small></div>
+        </div>
+        <button class="btn btn-dark" onclick="openRecharge()"><span data-ic="gift"></span> 充值积分</button>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat"><div class="stat-k">已用积分</div><div class="stat-v" id="st-used">—</div></div>
+        <div class="stat"><div class="stat-k">调用次数</div><div class="stat-v" id="st-calls">—</div></div>
+        <div class="stat"><div class="stat-k">账户状态</div><div class="stat-v" id="st-state" style="font-size:14px">—</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-h">
+        <h3>最近调用</h3>
+        <span class="sub" onclick="refreshLogs()" style="cursor:pointer">刷新</span>
+      </div>
+      <div style="overflow-x:auto;margin:0 -8px">
+        <table>
+          <thead><tr>
+            <th style="padding-left:8px">时间</th><th>模型</th>
+            <th class="num">输入</th><th class="num">输出</th><th class="num">扣积分</th>
+          </tr></thead>
+          <tbody id="log-body">
+            <tr><td colspan="5" class="muted center" style="padding:26px 0">载入中…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-h"><h3>我的密钥</h3><span class="sub">共 <b id="tk-count">0</b> 个</span></div>
+      <div id="token-list" class="muted" style="font-size:12.5px">载入中…</div>
+      <div class="hint">密钥即 API Key，请勿外泄。如需重置请联系客服。</div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ 客服 ============ -->
+<div class="mask" id="m-service">
+  <div class="sheet" style="max-width:352px;text-align:center">
+    <button class="sheet-x" onclick="closeMask('m-service')"><span data-ic="x"></span></button>
+    <div style="display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:14px">
+      <div class="mark" style="width:24px;height:24px;padding:2px"><img src="/logo-symbol.svg" alt="MIAO"></div>
+      <span style="font-size:12px;color:var(--ink-3)">MIAO 用户服务</span>
+    </div>
+    <div class="sheet-title" style="text-align:center">添加专属客服</div>
+    <div class="qr-wrap"><div class="qr"><img id="qr-service" alt="客服二维码"></div></div>
+    <div style="font-size:12px;color:var(--ink-3);line-height:1.7">充值、配置或使用遇到问题，欢迎联系我们。</div>
+  </div>
+</div>
+
+<!-- ============ 充值 ============ -->
+<div class="mask" id="m-recharge">
+  <div class="sheet">
+    <button class="sheet-x" onclick="closeMask('m-recharge')"><span data-ic="x"></span></button>
+    <div class="sheet-title">充值积分</div>
+    <div class="sheet-sub">积分余额：<span id="rc-bal">—</span> 积分</div>
+
+    <div class="tabs2" role="tablist">
+      <button role="tab" aria-selected="true" data-rtab="wx"><span data-ic="wechat"></span> 微信充值</button>
+      <button role="tab" aria-selected="false" data-rtab="code"><span data-ic="gift"></span> 兑换码充值</button>
+    </div>
+
+    <div id="rc-wx">
+      <div class="tiers" id="tiers"></div>
+      <div class="payline">支付 <b id="pay-amt">¥10.00</b>，到账 <b id="pay-pts">1,500 积分</b></div>
+      <button class="btn btn-block" style="background:#07C160;color:#fff" onclick="doPay()">
+        <span data-ic="wechat"></span> 微信支付
+      </button>
+      <div class="hint center">支付完成后积分自动到账，通常 3 秒内</div>
+    </div>
+
+    <div id="rc-code" style="display:none">
+      <div class="keyinput" style="margin-bottom:12px">
+        <input id="in-code" placeholder="输入兑换码，例如 DM-XXXX-XXXX" autocomplete="off" spellcheck="false">
+      </div>
+      <button class="btn btn-dark btn-block" onclick="doRedeem()">立即兑换</button>
+      <div class="hint">兑换码由客服发放，可叠加使用，不设上限。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ API 接入 ============ -->
+<div class="mask" id="m-api">
+  <div class="sheet" style="max-width:520px">
+    <button class="sheet-x" onclick="closeMask('m-api')"><span data-ic="x"></span></button>
+    <div class="sheet-title">API 接入说明</div>
+    <div class="sheet-sub">任何兼容 OpenAI 协议的客户端都能用</div>
+    <div style="background:#0F1115;border-radius:12px;padding:14px 16px;font-family:var(--mono);font-size:11.5px;line-height:1.9;color:#C8CDD6;overflow-x:auto">
+      <div style="color:#6B7280"># Base URL</div>
+      <div style="color:#7FD1A0">http://127.0.0.1:18085/v1</div>
+      <div style="color:#6B7280;margin-top:8px"># API Key</div>
+      <div style="color:#7FD1A0" id="api-key-line">sk-...</div>
+      <div style="color:#6B7280;margin-top:8px"># Model</div>
+      <div style="color:#7FD1A0" id="api-model-line">Miao:deepseek-v4.1-flash</div>
+    </div>
+    <div class="hint">只支持流式输出（stream=true）。非流式请求会被上游拒绝。</div>
+    <button class="btn btn-ghost btn-block" style="margin-top:14px" onclick="doCopyApi()">复制接入信息</button>
+  </div>
+</div>
+
+<!-- ============ Skill 配置 ============ -->
+<div class="mask" id="m-skill">
+  <div class="sheet" style="max-width:520px">
+    <button class="sheet-x" onclick="closeMask('m-skill')"><span data-ic="x"></span></button>
+    <div class="sheet-title">WorkBuddy Skill 配置</div>
+    <div class="sheet-sub">复制下面这段话，粘贴到 WorkBuddy 对话框直接发送</div>
+    <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:14px;font-size:12.5px;line-height:1.8;color:var(--ink-2)" id="skill-text"></div>
+    <button class="btn btn-dark btn-block" style="margin-top:14px" onclick="doCopySkill()">复制这段话</button>
+  </div>
+</div>
+
+<script src="ui.js"></script>
+<script>
+/* ---------- 图标注入 ---------- */
+$$('[data-ic]').forEach(el => { el.innerHTML = ICON[el.dataset.ic] || ''; });
+$$('[data-eye]').forEach(b => { b.innerHTML = ICON.eye; });
+
+/* ---------- Tab ---------- */
+$$('.seg button').forEach(b => b.onclick = () => {
+  $$('.seg button').forEach(x => x.setAttribute('aria-selected', x === b ? 'true' : 'false'));
+  $$('.tabpane').forEach(p => p.classList.remove('on'));
+  $('#pane-' + b.dataset.tab).classList.add('on');
+  if (b.dataset.tab === 'account') { refreshBalance(); refreshLogs(); refreshTokens(); }
+});
+
+function gotoAccount() {
+  $$('.seg button').forEach(x => x.setAttribute('aria-selected', x.dataset.tab === 'account' ? 'true' : 'false'));
+  $$('.tabpane').forEach(p => p.classList.remove('on'));
+  $('#pane-account').classList.add('on');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  refreshBalance(); refreshLogs(); refreshTokens();
+}
+
+/* ---------- 密钥显隐 ---------- */
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-eye]');
+  if (!b) return;
+  const inp = $('#' + b.dataset.eye);
+  if (!inp) return;
+  const show = inp.type === 'password';
+  inp.type = show ? 'text' : 'password';
+  b.innerHTML = show ? ICON.eyeOff : ICON.eye;
+});
+
+/* ---------- 勾选 ---------- */
+let checked = false;
+function toggleCheck() {
+  checked = !checked;
+  $('#chk').classList.toggle('on', checked);
+  $('#btn-enter').disabled = !checked;
+}
+
+/* ---------- 密钥状态 ---------- */
+function paintKeyState() {
+  const has = !!D.key;
+  $('#card-key').style.display = has ? 'block' : 'none';
+  $('#card-nokey').style.display = has ? 'none' : 'block';
+  $('#redeem-title').textContent = has ? '兑换成功，请保存密钥' : '载入你的密钥';
+  if (has) {
+    $('#in-key').value = D.key;
+    $('#in-key').type = 'password';
+    $('#api-key-line').textContent = maskKey(D.key);
+  }
+  $('#qr-service').src = QR_DATA;
+}
+
+async function submitKey() {
+  const k = $('#in-key-empty').value.trim();
+  if (!k) return toast('请先输入密钥');
+  try {
+    await loadMe(k);
+    paintKeyState(); refreshBalance();
+    toast('密钥已载入');
+  } catch (e) { toast('密钥无效：' + e.message); }
+}
+
+function resetKey() {
+  localStorage.removeItem('dorimi_key');
+  D.key = ''; D.me = null;
+  $('#card-nokey').style.display = 'block';
+  $('#card-key').style.display = 'none';
+  checked = false;
+  $('#chk').classList.remove('on');
+  $('#btn-enter').disabled = true;
+  $('#in-key-empty').focus();
+}
+
+async function doCopyKey() {
+  if (!D.key) return toast('还没有密钥');
+  const ok = await copyText(D.key);
+  $('#copy-hint').textContent = ok
+    ? 'MIAO 账户已复制，请保存到安全的位置。'
+    : '复制失败，请手动选中密钥后复制。';
+  if (ok) toast('已复制');
+}
+
+function doDownloadAccount() {
+  const txt =
+`MIAO for WorkBuddy · 账户信息
+生成时间：${new Date().toLocaleString('zh-CN')}
+
+API Key : ${D.key || '(未载入)'}
+Base URL: http://127.0.0.1:18085/v1
+积分余额: ${D.me ? fmtPts(D.me.quota) : '—'} 积分
+
+可用模型：
+${D.models.map(m => '  · Miao:' + m.id + '   ' + m.rate).join('\n')}
+
+提示：密钥等同于账户，请勿分享给他人。
+`;
+  saveBlob('MIAO-账户信息.txt', txt, 'text/plain');
+  toast('已下载');
+}
+
+function doDownloadConfig() {
+  if (!D.key) return toast('请先载入密钥');
+  const cfg = buildModelsConfig(D.key);
+  saveBlob('models.json', JSON.stringify(cfg, null, 2));
+  toast('已生成 models.json');
+}
+
+/* ---------- 余额 ---------- */
+async function refreshBalance() {
+  if (!D.key) {
+    $('#bal-inline').textContent = '—';
+    $('#bal-big').innerHTML = '—<small>积分</small>';
+    return;
+  }
+  try {
+    const me = await loadMe(D.key);
+    // 不限额度令牌（管理员/内部）没有真实余额，直接显示文案，避免出现天文数字
+    const unlimited = !!me.unlimited;
+    const balTxt = unlimited ? '不限额度' : fmtPts(me.quota);
+    $('#bal-inline').textContent = balTxt;
+    $('#bal-big').innerHTML = unlimited ? '不限额度' : (fmtPts(me.quota) + '<small>积分</small>');
+    $('#hero-balance').textContent = balTxt;
+    $('#st-used').textContent = fmtPts(me.used_quota);
+    $('#st-calls').textContent = (me.request_count != null ? me.request_count : '—');
+    $('#st-state').innerHTML = me.status === 1
+      ? '<span class="pill">正常</span>'
+      : '<span class="pill gray">已停用</span>';
+    $('#rc-bal').textContent = unlimited ? '不限额度' : fmtPts(me.quota);
+  } catch (e) {
+    $('#bal-inline').textContent = '—';
+  }
+}
+
+async function refreshLogs() {
+  if (!D.key) return;
+  const body = $('#log-body');
+  try {
+    const rows = await loadLogs(D.key, 12);
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="5" class="muted center" style="padding:26px 0">还没有调用记录</td></tr>';
+      return;
+    }
+    body.innerHTML = rows.map(r => `<tr>
+      <td style="padding-left:8px" class="muted nowrap">${esc(r.time)}</td>
+      <td>${esc(r.model)}</td>
+      <td class="num">${r.prompt_tokens || 0}</td>
+      <td class="num">${r.completion_tokens || 0}</td>
+      <td class="num" style="color:var(--ink);font-weight:600">${fmtPts(r.credits)}</td>
+    </tr>`).join('');
+  } catch (e) {
+    body.innerHTML = '<tr><td colspan="5" class="muted center" style="padding:26px 0">读取失败：' + esc(e.message) + '</td></tr>';
+  }
+}
+
+async function refreshTokens() {
+  if (!D.key) return;
+  try {
+    const j = await api('/api/me/tokens?key=' + encodeURIComponent(D.key));
+    const list = (j && j.rows) || [];
+    $('#tk-count').textContent = list.length;
+    $('#token-list').innerHTML = list.map(t => `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line-2)">
+        <div style="min-width:0">
+          <div style="font-size:12.5px;font-weight:600;color:var(--ink)">${esc(t.name)}</div>
+          <div class="mono" style="font-size:11.5px;color:var(--ink-3)">${esc(t.masked)}</div>
+        </div>
+        <div style="text-align:right;white-space:nowrap">
+          <div style="font-size:12.5px;font-weight:600">${t.unlimited ? '不限额度' : fmtPts(t.remain) + ' 积分'}</div>
+          <div style="font-size:11px;color:var(--ink-3)">已用 ${fmtPts(t.used)}</div>
+        </div>
+      </div>`).join('') || '<div class="muted">暂无密钥</div>';
+  } catch (e) { /* 静默 */ }
+}
+
+/* ---------- 充值 ---------- */
+const TIERS = [
+  { amt: 10, pts: 1500 }, { amt: 20, pts: 3000 }, { amt: 50, pts: 7500 },
+  { amt: 100, pts: 15000 }, { amt: 200, pts: 30000 }, { amt: 500, pts: 75000 },
+];
+let tierIdx = 0;
+
+function renderTiers() {
+  $('#tiers').innerHTML = TIERS.map((t, i) => `
+    <button class="tier ${i === tierIdx ? 'on' : ''}" onclick="pickTier(${i})">
+      <div class="tier-amt">¥${t.amt.toFixed(2)}</div>
+      <div class="tier-pt">${t.pts.toLocaleString('zh-CN')} 积分</div>
+    </button>`).join('');
+  $('#pay-amt').textContent = '¥' + TIERS[tierIdx].amt.toFixed(2);
+  $('#pay-pts').textContent = TIERS[tierIdx].pts.toLocaleString('zh-CN') + ' 积分';
+}
+function pickTier(i) { tierIdx = i; renderTiers(); }
+
+function openRecharge() {
+  if (!D.key) return toast('请先载入密钥');
+  $('#rc-bal').textContent = fmtPts(D.me ? D.me.quota : null);
+  renderTiers();
+  openMask('m-recharge');
+}
+$$('[data-rtab]').forEach(b => b.onclick = () => {
+  $$('[data-rtab]').forEach(x => x.setAttribute('aria-selected', x === b ? 'true' : 'false'));
+  $('#rc-wx').style.display = b.dataset.rtab === 'wx' ? 'block' : 'none';
+  $('#rc-code').style.display = b.dataset.rtab === 'code' ? 'block' : 'none';
+});
+
+async function doPay() {
+  const t = TIERS[tierIdx];
+  try {
+    const j = await api('/api/me/order', { method: 'POST', body: { key: D.key, amount: t.amt, points: t.pts } });
+    if (j && j.pay_url) {
+      window.open(j.pay_url, '_blank');
+    } else {
+      toast(j && j.message ? j.message : '下单成功，请联系客服完成支付');
+    }
+  } catch (e) { toast('下单失败：' + e.message); }
+}
+
+async function doRedeem() {
+  const code = $('#in-code').value.trim();
+  if (!code) return toast('请输入兑换码');
+  try {
+    const j = await api('/api/me/redeem', { method: 'POST', body: { key: D.key, code } });
+    if (j && j.ok) {
+      toast('兑换成功，+' + fmtPts(j.added) + ' 积分');
+      $('#in-code').value = '';
+      closeMask('m-recharge');
+      refreshBalance();
+    } else {
+      toast((j && j.message) || '兑换失败');
+    }
+  } catch (e) { toast('兑换失败：' + e.message); }
+}
+
+/* ---------- 接入方式 ---------- */
+function toggleDl(ev) {
+  ev.stopPropagation();
+  const m = $('#menu-dl');
+  m.classList.toggle('open');
+  if (m.classList.contains('open')) {
+    const r = ev.currentTarget.getBoundingClientRect();
+    m.style.left = Math.max(8, r.left) + 'px';
+    m.style.top = (r.bottom + 6) + 'px';
+    m.style.position = 'fixed';
+    setTimeout(() => document.addEventListener('click', () => m.classList.remove('open'), { once: true }), 0);
+  }
+}
+function downloadApp(os) {
+  if (os === 'mac') return toast('macOS 版即将开放');
+  // 直接下载网关托管的 MIAO.exe（v1.1.0）
+  const a = document.createElement('a');
+  a.href = '/download/MIAO.exe';
+  a.download = 'MIAO.exe';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => a.remove(), 300);
+  toast('开始下载 MIAO.exe …');
+}
+
+function showSkill() {
+  const k = D.key || '（你的密钥）';
+  $('#skill-text').textContent =
+`请用 MIAO 配置 WorkBuddy：
+API 地址 http://127.0.0.1:18085/v1
+API Key ${k}
+把 models.json 写到 ~/.workbuddy/models.json，完成后重启客户端。`;
+  openMask('m-skill');
+}
+async function doCopySkill() { (await copyText($('#skill-text').textContent)) ? toast('已复制') : toast('复制失败'); }
+async function doCopyApi() {
+  const t = `Base URL: http://127.0.0.1:18085/v1\nAPI Key: ${D.key}\nModel: Miao:deepseek-v4.1-flash`;
+  (await copyText(t)) ? toast('已复制') : toast('复制失败');
+}
+
+/* ---------- 客服二维码 ---------- */
+const QR_DATA = '/qr.png';
+
+/* ---------- 启动 ---------- */
+(async function boot() {
+  // 模型清单（给下载配置用）
+  try {
+    const j = await api('/api/models');
+    D.models = (j && j.models) || [];
+    $('#hero-models').textContent = D.models.length;
+  } catch (e) {
+    D.models = [{ id: 'deepseek-v4.1-flash', rate: '0.11x' }];
+  }
+  const saved = localStorage.getItem('dorimi_key') || new URLSearchParams(location.search).get('key') || '';
+  if (saved) {
+    try { await loadMe(saved); } catch (e) { D.key = saved; }
+  }
+  paintKeyState();
+  refreshBalance();
+})();
+</script>
+</body>
+</html>

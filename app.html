@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MIAO for WorkBuddy</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="stylesheet" href="ui.css">
+<style>
+  /* ---------------- App 专属 ---------------- */
+  html, body { background: #F4F6F9; }
+  body::before, body::after { display: none; }
+
+  html, body {
+    overflow: hidden;          /* 整页永不出现滚动条 */
+    height: 100%;
+  }
+  /* 隐藏滚动条但保留滚动能力（万一内容超高） */
+  html { scrollbar-width: none; -ms-overflow-style: none; }
+  html::-webkit-scrollbar { display: none; width: 0; height: 0; }
+  * { scrollbar-width: none; -ms-overflow-style: none; }
+  *::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+  body {
+    min-height: 100vh;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* 柔和弧线背景 */
+  .appbg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  }
+  .appbg i {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(31, 94, 255, .07);
+  }
+  .appbg i:nth-child(1) { width: 520px; height: 520px; left: -260px; top: -180px; }
+  .appbg i:nth-child(2) { width: 700px; height: 700px; left: -350px; top: -270px; border-color: rgba(31, 94, 255, .045); }
+  .appbg i:nth-child(3) { width: 460px; height: 460px; right: -240px; bottom: -200px; border-color: rgba(255, 138, 61, .09); }
+  .appbg i:nth-child(4) { width: 640px; height: 640px; right: -330px; bottom: -290px; border-color: rgba(255, 138, 61, .055); }
+
+  .screen {
+    position: relative; z-index: 1;
+    flex: 1;
+    display: flex; flex-direction: column;
+    padding: 0 26px;
+    min-height: 0;
+  }
+
+  /* 控制台屏：内容弹性排布，高度自适应窗口 */
+  #scr-console {
+    overflow-y: auto;          /* 需要时内容区可滚，但滚动条已隐藏 */
+    -webkit-overflow-scrolling: touch;
+  }
+  #scr-console .c-head { flex: none; }
+  #scr-console .bal-block { flex: none; }
+  #scr-console .mini-stats { flex: none; }
+  #scr-console .divider { flex: none; }
+  #scr-console .blk-h { flex: none; }
+  #scr-console .btn-out { flex: none; }
+  #scr-console .foot-rows {
+    flex: 1;
+    display: flex; flex-direction: column;
+    justify-content: flex-end;
+    min-height: 0;
+  }
+
+  /* ---------------- 登录屏 ---------------- */
+  #scr-login {
+    justify-content: center;
+    padding-bottom: 8px;
+  }
+  .lockup { text-align: center; margin-bottom: 34px; }
+  .locklogo {
+    width: 104px; height: 104px;
+    display: block; margin: 0 auto 18px;
+    border-radius: 24px;
+    box-shadow: 0 14px 34px -10px rgba(13, 40, 92, .3);
+  }
+  .lockup .word {
+    font-size: 33px; font-weight: 800; letter-spacing: -1.2px; line-height: 1;
+    display: inline-flex; align-items: baseline; gap: 0;
+  }
+  .lockup .word .blue { color: var(--navy); }
+  .lockup .word .ink  { color: var(--navy); }
+  .lockup .sub {
+    font-size: 12.5px; color: var(--ink-3);
+    margin-top: 9px; letter-spacing: .02em;
+  }
+
+  .field-l { font-size: 13px; font-weight: 600; color: var(--ink-2); margin-bottom: 9px; }
+  .big-input {
+    display: flex; align-items: center;
+    height: 50px; padding: 0 6px 0 15px;
+    background: #fff;
+    border: 1px solid #E3E7EE;
+    border-radius: 11px;
+    transition: .18s;
+  }
+  .big-input:focus-within {
+    border-color: #B9CBF0;
+    box-shadow: 0 0 0 4px rgba(31, 94, 255, .07);
+  }
+  .big-input input {
+    flex: 1; border: 0; outline: 0; background: transparent;
+    font-family: var(--mono); font-size: 13px; color: var(--ink);
+    min-width: 0; letter-spacing: .2px;
+  }
+  .big-input input::placeholder { font-family: var(--font); color: var(--ink-4); letter-spacing: 0; }
+  .big-input .icon-btn { width: 32px; height: 32px; }
+
+  .btn-xl {
+    width: 100%; height: 50px;
+    border-radius: 11px; border: 0;
+    background: var(--navy); color: #fff;
+    font-family: inherit; font-size: 14.5px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    cursor: pointer; transition: .16s;
+    margin-top: 18px;
+    box-shadow: 0 2px 4px rgba(13, 40, 92, .2), 0 12px 26px -14px rgba(13, 40, 92, .75);
+  }
+  .btn-xl:hover:not(:disabled) { background: var(--navy-2); }
+  .btn-xl:disabled { opacity: .45; cursor: not-allowed; }
+
+  .link-center {
+    text-align: center; margin-top: 16px;
+    font-size: 12.5px; color: var(--ink-3);
+    cursor: pointer;
+  }
+  .link-center:hover { color: var(--ink); text-decoration: underline; }
+
+  /* ---------------- 控制台屏 ---------------- */
+  #scr-console { display: none; padding-top: 10px; }
+
+  .c-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 0 22px;
+  }
+  .c-brand { display: flex; align-items: center; gap: 8px; }
+  .c-brand .mark { width: 26px; height: 26px; border-radius: 8px; font-size: 12px; }
+  .c-brand .mark.logo-mark { width: 128px; height: 34px; padding: 0; border: 0; background: transparent; box-shadow: none; }
+  .c-brand .t { font-size: 15px; font-weight: 800; letter-spacing: -.3px; color: var(--navy); }
+  .keychip {
+    display: flex; align-items: center; gap: 6px;
+    height: 28px; padding: 0 8px;
+    background: #fff; border: 1px solid var(--line);
+    border-radius: 8px;
+    font-family: var(--mono); font-size: 11px; color: var(--ink-2);
+    cursor: pointer; max-width: 190px;
+  }
+  .keychip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .big-title { font-size: 27px; font-weight: 800; letter-spacing: -.8px; margin: 6px 0 2px; color: var(--navy); }
+
+  .bal-block { margin-top: 10px; }
+  .bal-k { font-size: 12.5px; color: var(--ink-3); display: flex; align-items: center; gap: 6px; }
+  .bal-k .icon-btn { width: 20px; height: 20px; }
+  .bal-row {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 12px; margin-top: 2px;
+  }
+  .bal-num {
+    font-size: 42px; font-weight: 800; letter-spacing: -2px; line-height: 1.05;
+    font-variant-numeric: tabular-nums;
+  }
+  .bal-num small { font-size: 15px; font-weight: 600; color: var(--ink-3); letter-spacing: 0; margin-left: 5px; }
+
+  .btn-sm {
+    height: 36px; padding: 0 14px; border-radius: 9px;
+    border: 0; background: var(--navy); color: #fff;
+    font-family: inherit; font-size: 12.5px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 6px;
+    cursor: pointer; white-space: nowrap;
+    box-shadow: 0 6px 16px -10px rgba(13, 40, 92, .85);
+  }
+  .btn-sm:hover { background: var(--navy-2); }
+
+  .divider { height: 1px; background: var(--line); margin: 26px 0 20px; }
+
+  .blk-h {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .blk-h .n { font-size: 13.5px; font-weight: 700; }
+  .blk-h .s { font-size: 11.5px; color: var(--ink-3); }
+
+  .btn-out {
+    width: 100%; height: 46px; border-radius: 10px;
+    background: #fff; border: 1px solid #E3E7EE; color: var(--ink);
+    font-family: inherit; font-size: 13.5px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    cursor: pointer; transition: .15s;
+    margin-bottom: 9px;
+    box-shadow: var(--sh-1);
+  }
+  .btn-out:hover { border-color: #D3D9E2; background: #FCFDFE; }
+  .btn-out.dark {
+    background: var(--navy); border-color: var(--navy); color: #fff;
+    box-shadow: 0 8px 20px -14px rgba(13, 40, 92, .95);
+  }
+  .btn-out.dark:hover { background: var(--navy-2); }
+
+  .foot-rows { margin-top: 22px; }
+  .foot-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 0;
+    font-size: 13px; color: var(--ink-2);
+    cursor: pointer;
+  }
+  .foot-row:hover { color: var(--ink); }
+  .foot-row .r { display: flex; align-items: center; gap: 6px; color: var(--ink-3); font-size: 12px; }
+
+  .app-foot {
+    position: relative; z-index: 1;
+    border-top: 1px solid var(--line);
+    padding: 13px 26px;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer;
+    background: rgba(255, 255, 255, .55);
+    backdrop-filter: blur(6px);
+  }
+  .app-foot .l { display: flex; align-items: center; gap: 9px; font-size: 12.5px; font-weight: 600; color: var(--ink); }
+  .app-foot .ic {
+    width: 26px; height: 26px; border-radius: 8px;
+    background: #EDF2FB; color: var(--navy);
+    display: grid; place-items: center;
+  }
+
+  .login-note {
+    margin-top: 26px;
+    text-align: center;
+    font-size: 11.5px;
+    line-height: 1.9;
+    color: var(--ink-3);
+  }
+  .login-note code {
+    font-family: var(--mono); font-size: 11px;
+    background: rgba(20,22,26,.05); padding: 1px 5px; border-radius: 4px;
+  }
+
+  .mini-stats {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 9px; margin-top: 16px;
+  }
+  .ms {
+    background: #fff; border: 1px solid var(--line);
+    border-radius: 10px; padding: 10px 13px;
+  }
+  .ms-k { font-size: 11px; color: var(--ink-3); }
+  .ms-v { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.2px; margin-top: 1px; }
+
+  .bal-num.sm { font-size: 27px; letter-spacing: -.6px; }
+
+  .setrow {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 9px 0;
+    border-bottom: 1px solid var(--line-2);
+    font-size: 12.5px; color: var(--ink-3);
+  }
+  .setrow b { font-weight: 600; color: var(--ink); font-size: 12px; }
+
+  .toast { bottom: 78px; }
+
+  /* 弹层在小窗里稍微收一点 */
+  .sheet { max-width: 340px; padding: 22px; }
+  .tiers { grid-template-columns: repeat(3, 1fr); gap: 7px; }
+  .tier { padding: 10px 6px; }
+  .qr { width: 176px; height: 176px; }
+</style>
+</head>
+<body>
+
+<div class="appbg"><i></i><i></i><i></i><i></i></div>
+
+<!-- ================= 登录 / 输入密钥 ================= -->
+<section class="screen" id="scr-login">
+  <div class="lockup">
+    <img class="locklogo" src="/app-icon.png" alt="MIAO">
+    <div class="word">MIAO</div>
+    <div class="sub">for WorkBuddy</div>
+  </div>
+
+  <div class="field-l">API 密钥</div>
+  <div class="big-input">
+    <input id="key-input" type="password" placeholder="sk-..." autocomplete="off" spellcheck="false">
+    <button class="icon-btn" data-eye="key-input"></button>
+  </div>
+
+  <button class="btn-xl" id="btn-setup" onclick="doSetup()">
+    一键配置 WorkBuddy <span data-ic="arrow"></span>
+  </button>
+
+  <div class="link-center" onclick="skipToConsole()">已完成配置，仅进入控制台</div>
+
+  <div class="login-note">
+    密钥由客服在开通后发放 · 一个密钥通用全部 16 个模型<br>
+    配置只写入本机 <code>models.json</code>，不会上传
+  </div>
+</section>
+
+<!-- ================= 控制台 ================= -->
+<section class="screen" id="scr-console">
+  <div class="c-head">
+    <div class="c-brand">
+      <div class="mark logo-mark"><img src="/logo-h.svg" alt="MIAO"></div>
+      <div class="t">MIAO</div>
+    </div>
+    <div class="keychip" onclick="showKeyMenu()">
+      <span id="chip-key">sk-········</span>
+      <span data-ic="chev"></span>
+    </div>
+  </div>
+
+  <div class="big-title">密钥控制台</div>
+
+  <div class="bal-block">
+    <div class="bal-k">
+      积分余额
+      <button class="icon-btn" onclick="refreshBalance(true)" title="刷新">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1"/><path d="M20.7 4.2v4.6h-4.6"/></svg>
+      </button>
+    </div>
+    <div class="bal-row">
+      <div class="bal-num" id="bal-num">—<small>积分</small></div>
+      <button class="btn-sm" onclick="openRecharge()"><span data-ic="gift"></span> 充值积分</button>
+    </div>
+  </div>
+
+  <div class="mini-stats">
+    <div class="ms"><div class="ms-k">已用积分</div><div class="ms-v" id="ms-used">—</div></div>
+    <div class="ms"><div class="ms-k">调用次数</div><div class="ms-v" id="ms-calls">—</div></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="blk-h">
+    <span class="n">WorkBuddy</span>
+    <span class="s" id="cfg-state">未配置</span>
+  </div>
+  <button class="btn-out dark" onclick="openWorkbuddy()">打开 WorkBuddy <span data-ic="ext"></span></button>
+  <button class="btn-out" onclick="reconfigure()"><span data-ic="refresh"></span> 重新配置 WorkBuddy</button>
+
+  <div class="foot-rows">
+    <div class="foot-row" onclick="openWebConsole()">
+      <span>网页控制台</span>
+      <span class="r">打开 <span data-ic="ext"></span></span>
+    </div>
+    <div class="foot-row" onclick="showAbout()">
+      <span>设置</span>
+      <span class="r" id="ver-line">v1.0 <span data-ic="chev"></span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 底部客服 ================= -->
+<div class="app-foot" onclick="openMask('m-service')">
+  <div class="l">
+    <span class="ic" data-ic="spark"></span>
+    添加专属客服
+  </div>
+  <span data-ic="arrow" style="color:var(--ink-3)"></span>
+</div>
+
+<!-- ================= 客服 ================= -->
+<div class="mask" id="m-service">
+  <div class="sheet" style="text-align:center">
+    <button class="sheet-x" onclick="closeMask('m-service')"><span data-ic="x"></span></button>
+    <div style="display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:12px">
+      <div class="mark" style="width:24px;height:24px;padding:2px"><img src="/logo-symbol.svg" alt="MIAO"></div>
+      <span style="font-size:11.5px;color:var(--ink-3)">MIAO 用户服务</span>
+    </div>
+    <div class="sheet-title" style="text-align:center">添加专属客服</div>
+    <div class="qr-wrap"><div class="qr"><img id="qr-service" alt="客服二维码"></div></div>
+    <div style="font-size:11.5px;color:var(--ink-3);line-height:1.7">充值、配置或使用遇到问题，欢迎联系我们。</div>
+  </div>
+</div>
+
+<!-- ================= 充值 ================= -->
+<div class="mask" id="m-recharge">
+  <div class="sheet">
+    <button class="sheet-x" onclick="closeMask('m-recharge')"><span data-ic="x"></span></button>
+    <div class="sheet-title">充值积分</div>
+    <div class="sheet-sub">积分余额：<span id="rc-bal">—</span></div>
+
+    <div class="tabs2">
+      <button aria-selected="true" data-rtab="wx"><span data-ic="wechat"></span> 微信充值</button>
+      <button aria-selected="false" data-rtab="code"><span data-ic="gift"></span> 兑换码充值</button>
+    </div>
+
+    <div id="rc-wx">
+      <div class="tiers" id="tiers"></div>
+      <div class="payline">支付 <b id="pay-amt">¥10.00</b>，到账 <b id="pay-pts">1,500 积分</b></div>
+      <button class="btn btn-block" style="background:#07C160;color:#fff" onclick="doPay()">
+        <span data-ic="wechat"></span> 微信支付
+      </button>
+      <div class="hint center">支付完成后积分自动到账，通常 3 秒内</div>
+    </div>
+
+    <div id="rc-code" style="display:none">
+      <div class="keyinput" style="margin-bottom:12px">
+        <input id="in-code" placeholder="输入兑换码" autocomplete="off" spellcheck="false">
+      </div>
+      <button class="btn btn-dark btn-block" onclick="doRedeem()">立即兑换</button>
+      <div class="hint">兑换码由客服发放，可叠加使用。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 设置 ================= -->
+<div class="mask" id="m-about">
+  <div class="sheet" style="max-width:340px">
+    <button class="sheet-x" onclick="closeMask('m-about')"><span data-ic="x"></span></button>
+    <div class="sheet-title" style="font-size:15px">设置</div>
+    <div class="sheet-sub">MIAO for WorkBuddy · <span id="ver-cur">v1.0</span></div>
+    <div class="setrow"><span>网关地址</span><b>127.0.0.1:18085</b></div>
+    <div class="setrow"><span>配置文件</span><b id="set-path">~/.workbuddy/models.json</b></div>
+    <div class="setrow"><span>模型数量</span><b id="set-count">—</b></div>
+    <div class="setrow upd-row" style="cursor:pointer" onclick="checkUpdate()">
+      <span>检查更新</span>
+      <b style="display:flex;align-items:center;gap:6px">
+        <span id="upd-state" style="color:var(--ink-3);font-weight:400">点击检测</span>
+        <span data-ic="chev"></span>
+      </b>
+    </div>
+    <button class="btn btn-ghost btn-block" style="margin-top:14px" onclick="closeMask('m-about');logout()">更换密钥</button>
+  </div>
+</div>
+
+<!-- ================= 更新 ================= -->
+<div class="mask" id="m-update">
+  <div class="sheet" style="max-width:340px">
+    <button class="sheet-x" onclick="closeMask('m-update')"><span data-ic="x"></span></button>
+    <div class="sheet-title" style="font-size:15px" id="upd-title">检查更新</div>
+    <div class="sheet-sub" id="upd-sub">正在连接 MIAO 网关…</div>
+    <div id="upd-body" style="margin-top:12px"></div>
+    <button class="btn btn-dark btn-block" id="btn-upd" style="display:none;margin-top:14px" onclick="doUpdate()">立即更新</button>
+  </div>
+</div>
+
+<!-- ================= 密钥菜单 ================= -->
+<div class="mask" id="m-key">
+  <div class="sheet" style="max-width:320px">
+    <button class="sheet-x" onclick="closeMask('m-key')"><span data-ic="x"></span></button>
+    <div class="sheet-title" style="font-size:15px">当前密钥</div>
+    <div class="keyinput" style="margin:10px 0 14px">
+      <input id="key-view" readonly value="">
+      <button class="icon-btn" data-eye="key-view"></button>
+    </div>
+    <button class="btn btn-ghost btn-block" onclick="copyKey()"><span data-ic="copy"></span> 复制密钥</button>
+    <button class="btn btn-ghost btn-block" style="margin-top:8px" onclick="logout()">更换密钥</button>
+  </div>
+</div>
+
+<script src="ui.js"></script>
+<script>
+$$('[data-ic]').forEach(el => { el.innerHTML = ICON[el.dataset.ic] || ''; });
+$$('[data-eye]').forEach(b => { b.innerHTML = ICON.eye; });
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-eye]'); if (!b) return;
+  const inp = $('#' + b.dataset.eye); if (!inp) return;
+  const show = inp.type === 'password';
+  inp.type = show ? 'text' : 'password';
+  b.innerHTML = show ? ICON.eyeOff : ICON.eye;
+});
+
+const NATIVE = () => (window.pywebview && window.pywebview.api) || null;
+let configured = false;
+
+/* ---------- 登录 ---------- */
+async function doSetup() {
+  const k = $('#key-input').value.trim();
+  if (!k) return toast('请先填入 API 密钥');
+  const btn = $('#btn-setup');
+  btn.disabled = true;
+  btn.textContent = '正在配置…';
+  try {
+    let r;
+    if (NATIVE()) {
+      r = await NATIVE().apply_config(k);
+    } else {
+      // 浏览器预览模式：只做校验
+      await loadMe(k);
+      r = { ok: true, count: D.models.length, preview: true };
+    }
+    if (!r || r.ok === false) throw new Error((r && r.message) || '配置失败');
+    configured = true;
+    D.key = k;
+    localStorage.setItem('dorimi_key', k);
+    toast(r.preview ? '预览模式：已校验密钥' : ('配置完成，写入 ' + r.count + ' 个模型'));
+    enterConsole();
+  } catch (e) {
+    toast(e.message || '配置失败');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '一键配置 WorkBuddy <span data-ic="arrow"></span>';
+    $$('[data-ic]').forEach(el => { if (!el.innerHTML) el.innerHTML = ICON[el.dataset.ic] || ''; });
+  }
+}
+
+async function skipToConsole() {
+  const k = $('#key-input').value.trim() || localStorage.getItem('dorimi_key') || '';
+  if (!k) return toast('请先填入密钥');
+  try {
+    await loadMe(k);
+  } catch (e) {
+    return toast('密钥无效：' + e.message);
+  }
+  D.key = k;
+  localStorage.setItem('dorimi_key', k);
+  if (NATIVE()) {
+    const st = await NATIVE().get_state();
+    configured = !!st.configured;
+  }
+  enterConsole();
+}
+
+function enterConsole() {
+  $('#scr-login').style.display = 'none';
+  $('#scr-console').style.display = 'flex';
+  $('#chip-key').textContent = maskKey(D.key);
+  $('#key-view').value = D.key;
+  $('#cfg-state').textContent = configured ? '已配置当前密钥' : '尚未写入客户端';
+  refreshBalance();
+}
+
+/* ---------- 余额 ---------- */
+async function refreshBalance(manual) {
+  if (!D.key) return;
+  try {
+    const me = await loadMe(D.key);
+    const un = !!me.unlimited;
+    $('#bal-num').classList.toggle('sm', un);
+    $('#bal-num').innerHTML = un ? '不限额度' : (fmtPts(me.quota) + '<small>积分</small>');
+    $('#ms-used').textContent = fmtPts(me.used_quota);
+    $('#ms-calls').textContent = me.request_count != null ? me.request_count : '—';
+    $('#rc-bal').textContent = un ? '不限额度' : fmtPts(me.quota);
+    if (manual) toast('已刷新');
+  } catch (e) {
+    $('#bal-num').innerHTML = '—<small>积分</small>';
+    if (manual) toast('刷新失败：' + e.message);
+  }
+}
+
+/* ---------- 密钥菜单 ---------- */
+function showKeyMenu() { $('#key-view').value = D.key; openMask('m-key'); }
+async function copyKey() {
+  (await copyText(D.key)) ? toast('已复制') : toast('复制失败');
+}
+function logout() {
+  localStorage.removeItem('dorimi_key');
+  D.key = ''; D.me = null; configured = false;
+  closeMask('m-key');
+  $('#scr-console').style.display = 'none';
+  $('#scr-login').style.display = 'flex';
+  $('#key-input').value = '';
+  $('#key-input').type = 'password';
+}
+
+/* ---------- 原生能力 ---------- */
+async function openWorkbuddy() {
+  if (!NATIVE()) return toast('浏览器预览模式不支持');
+  const r = await NATIVE().open_workbuddy();
+  toast(r && r.ok ? '已尝试启动 WorkBuddy' : '未找到 WorkBuddy，请手动打开');
+}
+async function reconfigure() {
+  if (!NATIVE()) return toast('浏览器预览模式不支持');
+  const r = await NATIVE().apply_config(D.key);
+  if (r && r.ok) { configured = true; $('#cfg-state').textContent = '已配置当前密钥'; toast('已重新写入 ' + r.count + ' 个模型，重启客户端生效'); }
+  else toast((r && r.message) || '配置失败');
+}
+async function openWebConsole() {
+  if (!NATIVE()) return window.open('http://127.0.0.1:18300/index.html', '_blank');
+  await NATIVE().open_web_console();
+}
+
+async function showAbout() {
+  if (NATIVE()) {
+    const st = await NATIVE().get_state();
+    $('#set-path').textContent = (st.path || '').replace(/^.*\\.workbuddy/, '~/.workbuddy');
+    $('#set-count').textContent = (st.count || 0) + ' 个';
+    if (st.version) $('#ver-cur').textContent = 'v' + st.version;
+  } else {
+    $('#set-count').textContent = D.models.length + ' 个';
+  }
+  openMask('m-about');
+}
+
+/* ---------- 检测更新 ---------- */
+// 前端版本号：打包前必须与 app.py 的 APP_VERSION 同步（v1.1.4）
+const CUR_VERSION = '1.1.4';
+function verCmp(a, b) {
+  const pa = String(a || '0').replace('v', '').split('.').map(Number);
+  const pb = String(b || '0').replace('v', '').split('.').map(Number);
+  while (pa.length < 3) pa.push(0);
+  while (pb.length < 3) pb.push(0);
+  for (let i = 0; i < 3; i++) { if (pa[i] !== pb[i]) return pa[i] > pb[i] ? 1 : -1; }
+  return 0;
+}
+let updInfo = null;
+async function checkUpdate() {
+  const s = $('#upd-state');
+  s.textContent = '检测中…';
+  s.style.color = 'var(--ink-3)';
+  try {
+    let r;
+    let curVer = CUR_VERSION;
+    if (NATIVE()) {
+      r = await NATIVE().check_update();
+      if (r && r.current) curVer = r.current;
+    } else {
+      r = await api('/api/version');
+    }
+    if (!r || r.ok === false) throw new Error((r && r.message) || '检测失败');
+    updInfo = r;
+    const has = verCmp(r.latest, curVer) > 0;
+    $('#ver-cur').textContent = 'v' + curVer;
+    s.textContent = has ? ('新版本 v' + r.latest) : '已是最新版';
+    s.style.color = has ? 'var(--danger,#E5484D)' : 'var(--ink-3)';
+    if (has) {
+      $('#upd-title').textContent = '发现新版本 v' + r.latest;
+      $('#upd-sub').textContent = '当前版本 v' + curVer + ' · 点击下方按钮开始更新';
+      $('#upd-body').innerHTML = r.notes && r.notes.length
+        ? '<div style="background:#F5F8FD;border:1px solid var(--line);border-radius:10px;padding:10px 13px;max-height:190px;overflow:auto">'
+          + r.notes.map(n => '<div style="display:flex;gap:8px;font-size:12px;color:var(--ink-2);line-height:1.7"><span style="color:var(--navy);font-weight:700">✓</span><span>' + esc(n) + '</span></div>').join('')
+          + '</div>'
+        : '';
+      $('#btn-upd').style.display = 'block';
+      $('#btn-upd').textContent = '下载并更新到 v' + r.latest;
+      openMask('m-update');
+    } else {
+      toast('已是最新版本 v' + curVer);
+    }
+  } catch (e) {
+    s.textContent = '检测失败';
+    s.style.color = 'var(--danger,#E5484D)';
+    toast('检查更新失败：' + e.message);
+  }
+}
+
+async function doUpdate() {
+  if (!updInfo) return;
+  const btn = $('#btn-upd');
+  btn.disabled = true;
+  btn.textContent = '正在下载更新…';
+  try {
+    if (!NATIVE()) throw new Error('请使用桌面 App 进行更新');
+    const dl = await NATIVE().download_update();
+    if (!dl || !dl.ok) throw new Error((dl && dl.message) || '下载失败');
+    $('#upd-sub').textContent = '下载完成（' + Math.round((dl.size || 0) / 1048576) + ' MB），准备替换…';
+    $('#upd-body').innerHTML = '<div style="text-align:center;padding:10px 0;font-size:12.5px;color:var(--ink-2)">更新完成后程序将自动重启，请稍候</div>';
+    btn.textContent = '正在重启…';
+    const ap = await NATIVE().apply_update();
+    if (!ap || !ap.ok) throw new Error((ap && ap.message) || '应用更新失败');
+    toast('更新完成，正在重启');
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = '立即更新';
+    toast('更新失败：' + e.message);
+  }
+}
+
+/* ---------- 充值 ---------- */
+const TIERS = [
+  { amt: 10, pts: 1500 }, { amt: 20, pts: 3000 }, { amt: 50, pts: 7500 },
+  { amt: 100, pts: 15000 }, { amt: 200, pts: 30000 }, { amt: 500, pts: 75000 },
+];
+let tierIdx = 0;
+function renderTiers() {
+  $('#tiers').innerHTML = TIERS.map((t, i) => `
+    <button class="tier ${i === tierIdx ? 'on' : ''}" onclick="pickTier(${i})">
+      <div class="tier-amt">¥${t.amt.toFixed(2)}</div>
+      <div class="tier-pt">${t.pts.toLocaleString('zh-CN')} 积分</div>
+    </button>`).join('');
+  $('#pay-amt').textContent = '¥' + TIERS[tierIdx].amt.toFixed(2);
+  $('#pay-pts').textContent = TIERS[tierIdx].pts.toLocaleString('zh-CN') + ' 积分';
+}
+function pickTier(i) { tierIdx = i; renderTiers(); }
+function openRecharge() { renderTiers(); openMask('m-recharge'); }
+
+$$('[data-rtab]').forEach(b => b.onclick = () => {
+  $$('[data-rtab]').forEach(x => x.setAttribute('aria-selected', x === b ? 'true' : 'false'));
+  $('#rc-wx').style.display = b.dataset.rtab === 'wx' ? 'block' : 'none';
+  $('#rc-code').style.display = b.dataset.rtab === 'code' ? 'block' : 'none';
+});
+
+async function doPay() {
+  const t = TIERS[tierIdx];
+  try {
+    const j = await api('/api/me/order', { method: 'POST', body: { key: D.key, amount: t.amt, points: t.pts } });
+    if (j && j.pay_url) window.open(j.pay_url, '_blank');
+    else toast((j && j.message) || '下单失败');
+  } catch (e) { toast('下单失败：' + e.message); }
+}
+async function doRedeem() {
+  const code = $('#in-code').value.trim();
+  if (!code) return toast('请输入兑换码');
+  try {
+    const j = await api('/api/me/redeem', { method: 'POST', body: { key: D.key, code } });
+    if (j && j.ok) {
+      toast('兑换成功，+' + fmtPts(j.added) + ' 积分');
+      $('#in-code').value = '';
+      closeMask('m-recharge');
+      refreshBalance();
+    } else toast((j && j.message) || '兑换失败');
+  } catch (e) { toast('兑换失败：' + e.message); }
+}
+
+/* ---------- 启动 ---------- */
+(async function boot() {
+  try {
+    const j = await api('/api/models');
+    D.models = (j && j.models) || [];
+  } catch (e) {
+    D.models = [{ id: 'deepseek-v4.1-flash', rate: '0.11x' }];
+  }
+  $('#qr-service').src = '/qr.png';
+
+  // 1) 优先读 localStorage（已配置过的密钥）
+  let saved = localStorage.getItem('dorimi_key') || '';
+  // 2) 双保险：localStorage 被清/新环境 → 从原生桥读 models.json 已写入的 Miao: 密钥
+  if (!saved && NATIVE()) {
+    try {
+      const st = await NATIVE().get_state();
+      if (st && st.key) {
+        saved = st.key;
+        localStorage.setItem('dorimi_key', saved);  // 回写，进控制台后 chip 正常显示
+      }
+    } catch (e) {}
+  }
+  if (saved) {
+    $('#key-input').value = saved;
+    try {
+      await loadMe(saved);
+      if (NATIVE()) {
+        const st = await NATIVE().get_state();
+        configured = !!st.configured;
+      }
+      enterConsole();
+      return;
+    } catch (e) { /* 落在登录页 */ }
+  }
+  $('#key-input').focus();
+})();
+</script>
+</body>
+</html>

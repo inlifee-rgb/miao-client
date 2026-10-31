@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 615" width="512" height="615" role="img" aria-label="MIAO stacked logo"><g stroke="#0D285C" stroke-linecap="round" stroke-linejoin="round">
+<!-- cat ears and face outline -->
+<path d="M103 245 C97 191 103 100 138 71 C157 58 206 112 224 132 Q256 127 288 132 C310 111 357 57 377 71 C410 99 415 191 409 245 C418 287 400 346 356 376 C302 412 210 412 156 376 C111 346 94 288 103 245 Z" fill="#FFFFFF" stroke-width="17"/>
+<path d="M131 198 C131 159 133 120 146 104 C162 108 178 135 190 154 Z" fill="#76B7FF" stroke="none"/>
+<path d="M381 198 C381 159 379 120 366 104 C350 108 334 135 322 154 Z" fill="#76B7FF" stroke="none"/>
+<!-- subtle blue forehead swoosh -->
+<path d="M261 136 C289 139 301 155 328 173 C353 190 377 202 400 204 C377 223 342 214 316 202 C293 190 274 174 261 136Z" fill="#89BBFA" stroke="none"/>
+<!-- open face underside -->
+
+<!-- eyes -->
+<ellipse cx="202" cy="265" rx="24" ry="32" fill="#0D285C" stroke="none"/>
+<ellipse cx="193" cy="252" rx="7" ry="10" fill="white" stroke="none"/>
+<path d="M297 268 Q326 232 351 263" fill="none" stroke-width="15"/>
+<!-- blush -->
+<ellipse cx="151" cy="305" rx="25" ry="13" fill="#FFB7BA" stroke="none"/>
+<ellipse cx="363" cy="305" rx="25" ry="13" fill="#FFB7BA" stroke="none"/>
+<!-- nose and mouth -->
+<path d="M247 284 Q256 279 265 284 Q256 295 247 284Z" fill="#0D285C" stroke="none"/>
+<path d="M256 292 Q246 315 229 302 M256 292 Q268 315 285 302" fill="none" stroke-width="10"/>
+<!-- minimal whiskers -->
+<path d="M116 269 L72 263 M113 297 L72 313 M397 269 L440 263 M399 297 L441 313" fill="none" stroke-width="12"/>
+</g><text x="256" y="558" fill="#0D285C" font-family="Arial Rounded MT Bold, Nunito, Arial, sans-serif" text-anchor="middle" font-size="99" font-weight="900" letter-spacing="5">MIAO</text></svg>

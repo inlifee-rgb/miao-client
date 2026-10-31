@@ -1,0 +1,72 @@
+# 构建产物（体积大、可重建）
+dist/
+build/
+build-app/dist*/
+build-app/build*/
+build-app/*.iconset/
+build-app/app.iconset/
+
+# 虚拟环境
+.venv-mac/
+.venv/
+
+# 备份文件
+*.bak-*
+*.bak
+*.orig
+
+# Python 缓存
+__pycache__/
+*.pyc
+
+# 运行时/本地数据
+downloads/
+*.log
+
+# 敏感文件（绝不入库）
+.admin_token
+service.json
+service-qr.png
+*.key
+*.pem
+.env
+
+# 截图/临时
+_*.png
+_*.json
+
+# PyInstaller 中间产物目录（build-app 下）
+build-app/DORIMI/
+build-app/DORIMI-Setup-DBG/
+build-app/MIAO/
+build-app/build/
+build-app/dist/
+build-app/dist_new/
+build-app/dist_v*/
+build-app/build_v*/
+build-app/*.pkg
+build-app/*.toc
+build-app/*.pyz
+build-app/*.pyz.toc
+build-app/*.zip
+build-app/xref-*.html
+build-app/warn-*.txt
+
+# 开发截图与临时测试脚本（不参与打包）
+*-shot.png
+shot-*.png
+shot_*.py
+probe*.cjs
+test_*.cjs
+app-console.png
+app-login.png
+app-recharge.png
+upd_*.png
+scroll-check.png
+user-view.png
+miao-final.png
+native-shot.png
+dbg-shot.png
+final-shot.png
+hero_shot.png
+_icon_compare.png

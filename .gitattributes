@@ -1,0 +1,18 @@
+# 统一换行符，保证跨平台脚本可直接执行
+* text=auto eol=lf
+
+*.sh      text eol=lf
+*.command text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+*.py      text eol=lf
+*.txt     text eol=lf
+*.md      text eol=lf
+*.json    text eol=lf
+
+*.png     binary
+*.jpg     binary
+*.ico     binary
+*.icns    binary
+*.zip     binary
+*.exe     binary
